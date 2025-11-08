@@ -8,39 +8,23 @@
 import SwiftUI
 
 struct ContentView: View {
-    let emojis = ["👻", "🎃", "🕷️", "😈", "💀", "🕸️", "🧙", "🙀", "☠️", "🍭"]
-
     @State
-    var cardCount = 4
+    var emojis: [String] = EmojiData.emojisHoliday.shuffled()
 
     var body: some View {
         VStack {
-            ScrollView {
-                cards
-            }
+            Text(Constants.mainTitle)
+                .font(.largeTitle)
+            cards
             Spacer()
-            cardCountAdjusters
+            themeSelection
         }
         .padding()
     }
 
-    var cardRemover: some View {
-        cardCountAdjuster(
-            by: -1,
-            symbol: "rectangle.stack.badge.minus.fill"
-        )
-    }
-
-    var cardAdder: some View {
-        cardCountAdjuster(
-            by: 1,
-            symbol: "rectangle.stack.badge.plus.fill"
-        )
-    }
-
     var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))]) {
-            ForEach(0..<cardCount, id: \.self) { index in
+        LazyVGrid(columns: [GridItem(), GridItem(), GridItem(), GridItem(), GridItem()]) {
+            ForEach(0..<emojis.count, id: \.self) { index in
                 CardView(content: emojis[index])
                     .aspectRatio(2/3, contentMode: .fit)
             }
@@ -48,32 +32,53 @@ struct ContentView: View {
         .foregroundStyle(.orange)
     }
 
-    var cardCountAdjusters: some View {
-        HStack {
-            cardRemover
-            Spacer()
-            cardAdder
+    var themeSelection: some View {
+        HStack(spacing: 30) {
+            themeButton(
+                for: EmojiData.emojisCars,
+                label: Constants.carsLabel,
+                name: Constants.carsName
+            )
+            themeButton(
+                for: EmojiData.emojisHoliday,
+                label: Constants.holidayLabel,
+                name: Constants.holidayName
+            )
+            themeButton(
+                for: EmojiData.emojisAnimals,
+                label: Constants.animalsLabel,
+                name: Constants.animalsName
+            )
         }
-        .imageScale(.large)
-        .font(.largeTitle)
     }
 
-    func cardCountAdjuster(by offset: Int, symbol: String) -> some View {
-        Button(
-            action: {
-                cardCount += offset
-            }, label: {
-                Image(systemName: symbol)
-            }
-        )
-        .disabled(cardCount + offset < 1 || cardCount + offset > emojis.count)
+    func themeButton(
+        for theme: [String],
+        label: String,
+        name: String
+    ) -> some View {
+        VStack(spacing: 10) {
+            Button(
+                action: {
+                    emojis = theme.shuffled()
+                },
+                label: {
+                    Image(systemName: label)
+                        .frame(height: 30)
+                }
+            )
+            .imageScale(.large)
+            .font(.largeTitle)
+            Text(name)
+                .foregroundStyle(.blue)
+        }
     }
 }
 
 struct CardView: View {
     let content: String
     @State
-    var isFaceUp = true
+    var isFaceUp = false
 
     var body: some View {
         ZStack {
@@ -88,10 +93,25 @@ struct CardView: View {
             base.fill().opacity(isFaceUp ? 0 : 1)
         }
         .onTapGesture {
-            print("tapped")
             isFaceUp.toggle()
         }
     }
+}
+
+struct EmojiData {
+    static let emojisHoliday = ["👻", "👻", "🎃", "🎃", "🕷️", "🕷️", "😈", "😈", "💀", "🕸️", "🧙", "🙀", "☠️", "🍭", "🍭"]
+    static let emojisCars = ["🚗", "🚕", "🚙", "🚚", "🚛", "🚜", "🚝", "🚞", "🚗", "🚕", "🚙", "🚚", "🚛", "🚜", "🚝"]
+    static let emojisAnimals = ["🐶", "🐱", "🐭", "🐹", "🐰", "🐻", "🐼", "🐨", "🐵", "🐧", "🐶", "🐱", "🐭", "🐹", "🐰"]
+}
+
+private enum Constants {
+    static let mainTitle = "Memorize!"
+    static let carsLabel = "car.circle"
+    static let holidayLabel = "sun.horizon.circle"
+    static let animalsLabel = "tortoise.circle"
+    static let carsName = "Transport"
+    static let holidayName = "Holiday"
+    static let animalsName = "Animals"
 }
 
 #Preview {
